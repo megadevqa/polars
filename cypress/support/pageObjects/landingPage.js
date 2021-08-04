@@ -45,7 +45,9 @@ class LandingPage {
 
 	connectWallet() {
 		cy.get(this.btnConnectWallet).click();
-		cy.get(this.btnSelectWallet).click();
+		cy.get(this.btnSelectWallet)
+			.eq(0)
+			.click();
 	}
 
 	clickOnBtn(text) {
@@ -111,7 +113,8 @@ class LandingPage {
 		cy.wait(2000);
 		cy.get(this.tokenInput)
 			.eq(0)
-			.type(value)
+			.click()
+			.type(value, {delay:200})
 	}
 
 	checkPrice() {
@@ -125,8 +128,8 @@ class LandingPage {
 	}
 
 	clickSwapBtn(){
-		cy.get('.card div').contains('SWAP').click();
 		cy.wait(1000);
+		cy.get('.card div').contains('SWAP').click();
 	}
 
 	clickTakeBtn(content){
@@ -199,10 +202,14 @@ class LandingPage {
 				cy.contains('Accept')
 					.click({force:true})
 			} else {
-				cy.log('SKJDAKJSDJKA!!!!!!!!')
-				// cy.get('.navUser-item--account .navUser-action').click({force:true})
+				cy.log('!')
 			}
 		})
+	}
+
+	waitValuesLoaded(token) {
+		return cy.xpath(`//*[@class='list__title']//div[contains(@class,'list__value') and contains(.,'0 ${token}')]`)
+			.should('not.exist');
 	}
 
 }

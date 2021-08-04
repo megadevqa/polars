@@ -1,8 +1,6 @@
 /// <reference types="Cypress" />
 
 import LandingPage from '../../../support/pageObjects/landingPage';
-import AssetPage from '../../../support/pageObjects/assetPage';
-import QueriesPage from '../../../support/pageObjects/queriesPage';
 import keyring from '@polkadot/ui-keyring';
 import promisify from 'cypress-promise';
 import Web3 from 'web3';
@@ -36,12 +34,16 @@ describe('Smoke tests', function() {
 
 	it('Trade - Liquid pool to White', function() {
 
+		let receiveQuantity = [];
+
 		cy.visit(Cypress.env('url'));
 
-		// landingPage.connectWallet();
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 		landingPage.changeNetwork('Competition');
 		landingPage.selectTab('TRADE');
 		landingPage.selectLiquidPool();
+		cy.contains('USDP')
 
 		landingPage.inputQuantity(100);
 
@@ -55,16 +57,19 @@ describe('Smoke tests', function() {
 			})
 		})
 
-		landingPage.checkReceiveQuantity().then(function($el) {
-			let receiveQuantity = $el.text();
-			expect(receiveQuantity).contains('192.27060')
+		landingPage.checkReceiveQuantity().then(async function($el) {
+			let test = await $el.text().toString().split(' WHITE')[0].replace('\n          ','');
+			await cy.log(`MESSAGE-${receiveQuantity}`)
+			let testUpdate = +test
+			receiveQuantity = [testUpdate, '']
+			return receiveQuantity;
 		})
 
 		landingPage.getSecondTokenBalance().then(async function($el) {
 			let value = $el.text();
 			let secondValue = value.split(': ')[1];
 			let balance = +secondValue;
-			let nextBalance = (balance + 192.27060).toString();
+			let nextBalance = (balance + receiveQuantity[0]).toString();
 
 			cy.log('BALANCE:', secondValue);
 			cy.log('NEXT:', nextBalance);
@@ -90,14 +95,19 @@ describe('Smoke tests', function() {
 
 	it('Trade - Liquid pool to Black', function() {
 
+		let receiveQuantity = [];
+
 		cy.visit(Cypress.env('url'));
 
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('TRADE');
 		landingPage.selectLiquidPool();
 
 		landingPage.changeTokenInModal('BLACK')
+		cy.contains('USDP')
 		landingPage.inputQuantity(100);
 
 		landingPage.getEventPrice(blackPriceIndex).then(async function($el) {
@@ -110,16 +120,19 @@ describe('Smoke tests', function() {
 			})
 		})
 
-		landingPage.checkReceiveQuantity().then(function($el) {
-			let receiveQuantity = $el.text();
-			expect(receiveQuantity).contains('207.07846')
+		landingPage.checkReceiveQuantity().then(async function($el) {
+			let test = await $el.text().toString().split(' BLACK')[0].replace('\n          ','');
+			await cy.log(`MESSAGE-${receiveQuantity}`)
+			let testUpdate = +test
+			receiveQuantity = [testUpdate, '']
+			return receiveQuantity;
 		})
 
 		landingPage.getSecondTokenBalance().then(async function($el) {
 			let value = $el.text();
 			let secondValue = value.split(': ')[1];
 			let balance = +secondValue;
-			let nextBalance = (balance + 207.07846).toString();
+			let nextBalance = (balance + receiveQuantity[0]).toString();
 
 			cy.log('BALANCE:',secondValue);
 			cy.log('NEXT:',nextBalance);
@@ -148,16 +161,18 @@ describe('Smoke tests', function() {
 		let receiveQuantity = [];
 
 		cy.visit(Cypress.env('url'));
-		cy.clearLocalStorage()
-		cy.clearCookies()
-		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('TRADE');
+		cy.contains('USDP')
 		landingPage.selectTradePool();
 
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
+		landingPage.waitValuesLoaded('WHITE');
 
 		landingPage.checkReceiveQuantity().then(async function($el) {
 			let test = await $el.text().toString().split(' WHITE')[0].replace('\n          ','');
@@ -199,15 +214,19 @@ describe('Smoke tests', function() {
 		let receiveQuantity = [];
 
 		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('TRADE');
+		cy.contains('USDP')
 		landingPage.selectTradePool();
 		cy.wait(1000);
 		landingPage.changeTokenInModal('BLACK')
-
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
+		landingPage.waitValuesLoaded('BLACK');
 
 		landingPage.checkReceiveQuantity().then(async function($el) {
 			let test = await $el.text().toString().split(' WHITE')[0].replace('\n          ','');
@@ -237,10 +256,14 @@ describe('Smoke tests', function() {
 		let bwtPrice = '1';
 		cy.visit(Cypress.env('url'));
 
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
+
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('EARN');
 
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
 
 		landingPage.checkPrice().then(async function($el) {
@@ -286,12 +309,15 @@ describe('Smoke tests', function() {
 
 		let bwtPrice = '1';
 		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('EARN');
 		landingPage.selectTakeReturn('RETURN LIQUIDITY');
 
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
 
 		landingPage.checkPrice().then(async function($el) {
@@ -337,12 +363,15 @@ describe('Smoke tests', function() {
 
 		let bwtPrice = '1';
 		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('EARN');
 		landingPage.selectEarnPool('LIQUID POOL');
 
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
 
 		landingPage.checkPrice().then(async function($el) {
@@ -381,6 +410,8 @@ describe('Smoke tests', function() {
 
 		let bwtPrice = '1';
 		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
@@ -389,6 +420,7 @@ describe('Smoke tests', function() {
 		cy.wait(1000);
 		landingPage.selectTakeReturn('REMOVE LIQUIDITY');
 
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
 
 		landingPage.checkPrice().then(async function($el) {
@@ -434,14 +466,19 @@ describe('Smoke tests', function() {
 
 		let receiveQuantity = [];
 
-		// let bwtPrice = '1';
 		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
 		landingPage.selectTab('EARN');
 		landingPage.selectEarnPool('TRADE POOL');
 
+		cy.wait(1000);
+		landingPage.inputQuantity(100);
+		cy.reload();
+		cy.wait(1000);
 		landingPage.inputQuantity(100);
 
 		landingPage.checkReceiveQuantity().then(async function($el) {
@@ -467,6 +504,8 @@ describe('Smoke tests', function() {
 		let receiveQuantity = [];
 
 		cy.visit(Cypress.env('url'));
+		landingPage.connectWallet();
+		landingPage.waitForSuccessMessage();
 
 		landingPage.changeNetwork('Competition');
 
@@ -475,6 +514,7 @@ describe('Smoke tests', function() {
 		cy.wait(1000);
 		landingPage.selectTakeReturn('REMOVE LIQUIDITY');
 
+		cy.wait(1000);
 		landingPage.inputQuantity(10);
 
 		landingPage.checkReceiveQuantity().then(async function($el) {
